@@ -1,3 +1,4 @@
+<img width="315" height="127" alt="截屏2026-05-21 22 30 17" src="https://github.com/user-attachments/assets/3a833732-1534-45c6-8423-7dd65767978f" />
 # codex-quota-menu
 
 一个放在 macOS 菜单栏里的 Codex 额度小浮窗，主打“随手看额度”和“可更换皮肤的桌面小表盘”。
@@ -8,7 +9,8 @@
 
 <img width="327" height="116" alt="截屏2026-05-21 22 28 14" src="https://github.com/user-attachments/assets/8e8bce63-4e36-472b-bce7-6f45ce6c5016" />
 <img width="262" height="119" alt="截屏2026-05-21 22 29 44" src="https://github.com/user-attachments/assets/18f0b649-6325-487e-b220-4018994d4aca" />
-<img width="323" height="158" alt="截屏2026-05-21 22 28 48" src="https://github.com/user-attachments/assets/2e19223f-3cd4-41d2-8bcc-e99b517e801b" />
+<img width="316" height="127" alt="截屏2026-05-21 22 30 27" src="https://github.com/user-attachments/assets/6bf78be4-37f9-45cf-8170-744714a078c6" />
+
 
 
 
