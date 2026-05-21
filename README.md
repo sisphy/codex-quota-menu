@@ -6,9 +6,10 @@
 
 `codex-quota-menu` 支持在菜单栏里切换表盘风格，目前内置玻璃卡片、电子表、电子墨水三种皮肤。
 
-<img width="313" height="123" alt="截屏2026-05-21 22 27 46" src="https://github.com/user-attachments/assets/94df3495-5453-4900-b247-ce266494cb51" />
-<img width="323" height="158" alt="截屏2026-05-21 22 28 48" src="https://github.com/user-attachments/assets/2e19223f-3cd4-41d2-8bcc-e99b517e801b" />
 <img width="327" height="116" alt="截屏2026-05-21 22 28 14" src="https://github.com/user-attachments/assets/8e8bce63-4e36-472b-bce7-6f45ce6c5016" />
+<img width="262" height="119" alt="截屏2026-05-21 22 29 44" src="https://github.com/user-attachments/assets/18f0b649-6325-487e-b220-4018994d4aca" />
+<img width="323" height="158" alt="截屏2026-05-21 22 28 48" src="https://github.com/user-attachments/assets/2e19223f-3cd4-41d2-8bcc-e99b517e801b" />
+
 
 
 ## 它能做什么
