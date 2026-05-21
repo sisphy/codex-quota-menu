@@ -4,9 +4,12 @@
 
 如果你经常用 Codex，却总是不知道“5 小时额度还剩多少”“本周额度什么时候重置”，这个小工具就是为这个场景做的：它会自动读取本机 Codex 的额度信息，显示剩余百分比、重置时间，并根据一周额度的使用节奏给你一句简单提醒。
 
-悬浮窗不是固定长相。`codex-quota-menu` 支持在菜单栏里切换表盘风格，目前内置玻璃卡片、电子表、电子墨水三种皮肤；电子表皮肤还会根据一周额度节奏自动切换正常、奖励、注意、危险等不同视觉状态。
+`codex-quota-menu` 支持在菜单栏里切换表盘风格，目前内置玻璃卡片、电子表、电子墨水三种皮肤。
 
-![codex-quota-menu screenshot](docs/screenshot.png)
+<img width="313" height="123" alt="截屏2026-05-21 22 27 46" src="https://github.com/user-attachments/assets/94df3495-5453-4900-b247-ce266494cb51" />
+<img width="323" height="158" alt="截屏2026-05-21 22 28 48" src="https://github.com/user-attachments/assets/2e19223f-3cd4-41d2-8bcc-e99b517e801b" />
+<img width="327" height="116" alt="截屏2026-05-21 22 28 14" src="https://github.com/user-attachments/assets/8e8bce63-4e36-472b-bce7-6f45ce6c5016" />
+
 
 ## 它能做什么
 
