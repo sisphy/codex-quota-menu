@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Casio Layout Calibrator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --panel: #111418;
+      --ink: #172017;
+      --line: #42d3ff;
+      --green: #64e27f;
+      --orange: #ffad32;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0b0d10;
+      color: #f4f7fa;
+      font: 13px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(640px, 1fr) 360px;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .stage-wrap,
+    aside {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
+    }
+
+    .stage-wrap {
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: #c7d0d9;
+    }
+
+    button,
+    select,
+    input {
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 6px;
+      background: #1b2026;
+      color: #f4f7fa;
+      font: inherit;
+      padding: 6px 8px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .stage {
+      position: relative;
+      width: min(100%, 1068px);
+      aspect-ratio: 1424 / 732;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #050607;
+      border-radius: 4px;
+    }
+
+    .stage > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .box {
+      position: absolute;
+      border: 2px dashed var(--line);
+      background: rgba(66,211,255,.06);
+      color: var(--line);
+      cursor: move;
+      min-width: 24px;
+      min-height: 16px;
+    }
+
+    .box[data-kind="reset"] {
+      border-color: var(--green);
+      background: rgba(100,226,127,.06);
+      color: var(--green);
+    }
+
+    .box[data-kind="warning"] {
+      border-color: var(--orange);
+      background: rgba(255,173,50,.08);
+      color: var(--orange);
+    }
+
+    .box.active {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    .box-label {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(0,0,0,.65);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .preview {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      opacity: .92;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .quota-preview {
+      grid-template-columns: 34% 66%;
+      align-items: center;
+      justify-items: stretch;
+      padding: 0 3% 0 4%;
+    }
+
+    .quota-title {
+      font-weight: 900;
+      letter-spacing: 0;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .quota-rule {
+      margin-top: .25em;
+      width: 155%;
+      border-bottom: .12em dotted currentColor;
+    }
+
+    .quota-number {
+      width: 100%;
+      height: 92%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .reset-preview {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 8%;
+      gap: 4%;
+      text-align: center;
+    }
+
+    .reset-title {
+      font-weight: 900;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .reset-rule {
+      height: 1px;
+      background: currentColor;
+      opacity: .85;
+    }
+
+    .reset-value {
+      font-weight: 900;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .reset-number {
+      height: 42%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .warning-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2%;
+      padding: 0 3%;
+      font-weight: 900;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .lcd-cjk {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", sans-serif;
+      font-weight: 900;
+      letter-spacing: .06em;
+      -webkit-font-smoothing: none;
+      text-rendering: geometricPrecision;
+      transform: scaleX(.92);
+      transform-origin: center;
+      text-shadow:
+        .55px 0 currentColor,
+        -.55px 0 currentColor,
+        0 .35px currentColor;
+    }
+
+    .fit-text {
+      display: inline-block;
+      max-width: 100%;
+      transform-origin: center;
+    }
+
+    .seg-text {
+      height: 100%;
+      max-width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .04em;
+      color: var(--ink);
+    }
+
+    .seg-char {
+      position: relative;
+      height: 100%;
+      flex: 0 0 auto;
+      aspect-ratio: .55;
+    }
+
+    .seg-char.narrow {
+      aspect-ratio: .23;
+    }
+
+    .seg-char.percent {
+      aspect-ratio: .78;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Arial Black", Impact, ui-monospace, "SF Mono", Menlo, monospace;
+      font-weight: 900;
+      font-size: 142%;
+      line-height: .78;
+      transform: translateY(-.02em) scaleX(.92);
+    }
+
+    .seg {
+      position: absolute;
+      background: currentColor;
+      border-radius: 999px;
+      opacity: 0;
+    }
+
+    .seg.on {
+      opacity: 1;
+    }
+
+    .seg.a,
+    .seg.g,
+    .seg.d {
+      left: 18%;
+      width: 64%;
+      height: 14%;
+    }
+
+    .seg.a { top: 0; }
+    .seg.g { top: 43%; }
+    .seg.d { bottom: 0; }
+
+    .seg.b,
+    .seg.c,
+    .seg.e,
+    .seg.f {
+      width: 17%;
+      height: 38%;
+    }
+
+    .seg.b { right: 0; top: 7%; }
+    .seg.c { right: 0; bottom: 7%; }
+    .seg.e { left: 0; bottom: 7%; }
+    .seg.f { left: 0; top: 7%; }
+
+    .colon-dot {
+      position: absolute;
+      left: 35%;
+      width: 30%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .colon-dot.top { top: 31%; }
+    .colon-dot.bottom { bottom: 31%; }
+
+    .warning-icon {
+      font-size: .95em;
+    }
+
+    .handle {
+      position: absolute;
+      right: -6px;
+      bottom: -6px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: currentColor;
+      border: 2px solid #111;
+      cursor: nwse-resize;
+    }
+
+    aside {
+      padding: 14px;
+      position: sticky;
+      top: 18px;
+      align-self: start;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .hint {
+      color: #9eaab6;
+      margin-bottom: 14px;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      color: #aeb8c2;
+      font-size: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      resize: vertical;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 8px;
+      background: #090b0e;
+      color: #d7f7df;
+      padding: 10px;
+      font: 12px/1.45 "SF Mono", Menlo, monospace;
+    }
+
+    .editor {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .nudge {
+      display: grid;
+      grid-template-columns: repeat(3, 34px);
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .nudge button {
+      width: 34px;
+      height: 30px;
+      padding: 0;
+    }
+
+    .nudge .wide {
+      grid-column: span 3;
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="stage-wrap">
+      <div class="toolbar">
+        <strong>底图</strong>
+        <select id="imageSelect">
+          <option value="../Sources/ChatGPTQuotaMenu/Resources/casio-skin.png">半静态皮肤</option>
+          <option value="../Sources/ChatGPTQuotaMenu/Resources/casio-design-reference.png">设计稿</option>
+        </select>
+        <button id="reset">重置框</button>
+        <button id="copy">复制 Swift 坐标</button>
+      </div>
+      <div class="stage" id="stage">
+        <img id="backdrop" src="../Sources/ChatGPTQuotaMenu/Resources/casio-skin.png" alt="">
+      </div>
+    </section>
+
+    <aside>
+      <h1>定位校准</h1>
+      <p class="hint">拖动框改变位置，拖右下角圆点改变大小。调好后复制 Swift 坐标，粘回 <code>CasioOverlayLayout</code>。</p>
+      <div class="editor">
+        <label>当前区域
+          <select id="boxSelect"></select>
+        </label>
+      </div>
+      <div class="fields">
+        <label>X <input id="x" type="number" step="0.001"></label>
+        <label>Y <input id="y" type="number" step="0.001"></label>
+        <label>W <input id="w" type="number" step="0.001"></label>
+        <label>H <input id="h" type="number" step="0.001"></label>
+      </div>
+      <div class="nudge">
+        <span></span><button data-nudge="up">↑</button><span></span>
+        <button data-nudge="left">←</button><button data-nudge="down">↓</button><button data-nudge="right">→</button>
+        <button class="wide" data-nudge="grow">放大</button>
+        <button class="wide" data-nudge="shrink">缩小</button>
+      </div>
+      <textarea id="output" spellcheck="false"></textarea>
+    </aside>
+  </main>
+
+  <script>
+    const defaults = {
+      shortQuota: { label: '5小时数字', kind: 'quota', x: 0.315, y: 0.190, width: 0.255, height: 0.175 },
+      weeklyQuota: { label: '一周数字', kind: 'quota', x: 0.315, y: 0.445, width: 0.255, height: 0.175 },
+      shortReset: { label: '时间', kind: 'reset', x: 0.690, y: 0.245, width: 0.210, height: 0.105 },
+      weeklyReset: { label: '日期/时间', kind: 'reset', x: 0.690, y: 0.520, width: 0.210, height: 0.125 },
+      warning: { label: '提醒正文', kind: 'warning', x: 0.225, y: 0.757, width: 0.615, height: 0.070 },
+    };
+
+    const stage = document.querySelector('#stage');
+    const backdrop = document.querySelector('#backdrop');
+    const imageSelect = document.querySelector('#imageSelect');
+    const boxSelect = document.querySelector('#boxSelect');
+    const output = document.querySelector('#output');
+    const fields = ['x', 'y', 'w', 'h'].reduce((memo, id) => {
+      memo[id] = document.querySelector('#' + id);
+      return memo;
+    }, {});
+
+    let boxes = JSON.parse(JSON.stringify(defaults));
+    let activeKey = 'shortQuota';
+    let drag = null;
+
+    for (const [key, box] of Object.entries(defaults)) {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = box.label;
+      boxSelect.appendChild(option);
+    }
+
+    function render() {
+      stage.querySelectorAll('.box').forEach(node => node.remove());
+      for (const [key, box] of Object.entries(boxes)) {
+        const el = document.createElement('div');
+        el.className = 'box' + (key === activeKey ? ' active' : '');
+        el.dataset.key = key;
+        el.dataset.kind = box.kind;
+        el.style.left = box.x * 100 + '%';
+        el.style.top = box.y * 100 + '%';
+        el.style.width = box.width * 100 + '%';
+        el.style.height = box.height * 100 + '%';
+        el.innerHTML = `
+          <div class="box-label">${box.label}</div>
+          ${previewHTML(key)}
+          <div class="handle"></div>
+        `;
+        stage.appendChild(el);
+      }
+      fitText();
+      syncPanel();
+      exportSwift();
+    }
+
+    function updateBoxElement(key) {
+      const box = boxes[key];
+      const el = stage.querySelector(`.box[data-key="${key}"]`);
+      if (!el) return;
+      el.style.left = box.x * 100 + '%';
+      el.style.top = box.y * 100 + '%';
+      el.style.width = box.width * 100 + '%';
+      el.style.height = box.height * 100 + '%';
+      fitText();
+      syncPanel();
+      exportSwift();
+    }
+
+    function setActiveKey(key) {
+      activeKey = key;
+      boxSelect.value = key;
+      stage.querySelectorAll('.box').forEach(el => {
+        el.classList.toggle('active', el.dataset.key === activeKey);
+      });
+      syncPanel();
+    }
+
+    function previewHTML(key) {
+      if (key === 'shortQuota') {
+        return `<div class="preview">${segText('99')}</div>`;
+      }
+      if (key === 'weeklyQuota') {
+        return `<div class="preview">${segText('76')}</div>`;
+      }
+      if (key === 'shortReset') {
+        return `<div class="preview reset-number">${segText('14:06')}</div>`;
+      }
+      if (key === 'weeklyReset') {
+        return `<div class="preview reset-preview"><div class="reset-value fit-text">5月27日</div><div class="reset-number">${segText('08:48')}</div></div>`;
+      }
+      return `<div class="preview warning-preview"><span class="fit-text lcd-cjk">稍微悠着点，使用进度已超时间10%</span></div>`;
+    }
+
+    function segText(text) {
+      return `<div class="seg-text">${Array.from(text).map(segChar).join('')}</div>`;
+    }
+
+    function segChar(char) {
+      if (char === ':') {
+        return `<span class="seg-char narrow"><i class="colon-dot top"></i><i class="colon-dot bottom"></i></span>`;
+      }
+      if (char === '%') {
+        return `<span class="seg-char percent">%</span>`;
+      }
+      const active = new Set(segmentMap[char] || []);
+      return `<span class="seg-char">${['a','b','c','d','e','f','g'].map(name => `<i class="seg ${name} ${active.has(name) ? 'on' : ''}"></i>`).join('')}</span>`;
+    }
+
+    const segmentMap = {
+      '0': ['a','b','c','d','e','f'],
+      '1': ['b','c'],
+      '2': ['a','b','d','e','g'],
+      '3': ['a','b','c','d','g'],
+      '4': ['b','c','f','g'],
+      '5': ['a','c','d','f','g'],
+      '6': ['a','c','d','e','f','g'],
+      '7': ['a','b','c'],
+      '8': ['a','b','c','d','e','f','g'],
+      '9': ['a','b','c','d','f','g'],
+    };
+
+    function fitText() {
+      for (const el of stage.querySelectorAll('.fit-text')) {
+        const parent = el.parentElement;
+        if (!parent) continue;
+        let low = 4;
+        let high = Math.max(12, parent.clientHeight * 1.2);
+        for (let i = 0; i < 12; i++) {
+          const mid = (low + high) / 2;
+          el.style.fontSize = mid + 'px';
+          if (el.scrollWidth <= parent.clientWidth && el.scrollHeight <= parent.clientHeight) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+        el.style.fontSize = low + 'px';
+      }
+    }
+
+    function syncPanel() {
+      const box = boxes[activeKey];
+      boxSelect.value = activeKey;
+      fields.x.value = box.x.toFixed(3);
+      fields.y.value = box.y.toFixed(3);
+      fields.w.value = box.width.toFixed(3);
+      fields.h.value = box.height.toFixed(3);
+    }
+
+    function exportSwift() {
+      const line = (name, box) => `    var ${name}: CGRect {\n        rect(x: ${box.x.toFixed(3)}, y: ${box.y.toFixed(3)}, width: ${box.width.toFixed(3)}, height: ${box.height.toFixed(3)})\n    }`;
+      output.value = Object.entries(boxes).map(([name, box]) => line(name, box)).join('\n\n');
+    }
+
+    function stagePoint(event) {
+      const rect = stage.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) / rect.width,
+        y: (event.clientY - rect.top) / rect.height,
+      };
+    }
+
+    stage.addEventListener('pointerdown', event => {
+      const boxEl = event.target.closest('.box');
+      if (!boxEl) return;
+      activeKey = boxEl.dataset.key;
+      const box = boxes[activeKey];
+      const point = stagePoint(event);
+      drag = {
+        mode: event.target.classList.contains('handle') ? 'resize' : 'move',
+        startPoint: point,
+        startBox: { ...box },
+      };
+      boxEl.setPointerCapture(event.pointerId);
+      setActiveKey(activeKey);
+    });
+
+    stage.addEventListener('pointermove', event => {
+      if (!drag) return;
+      const point = stagePoint(event);
+      const dx = point.x - drag.startPoint.x;
+      const dy = point.y - drag.startPoint.y;
+      const box = boxes[activeKey];
+      if (drag.mode === 'move') {
+        box.x = clamp(drag.startBox.x + dx, 0, 1 - box.width);
+        box.y = clamp(drag.startBox.y + dy, 0, 1 - box.height);
+      } else {
+        box.width = clamp(drag.startBox.width + dx, 0.04, 1 - box.x);
+        box.height = clamp(drag.startBox.height + dy, 0.04, 1 - box.y);
+      }
+      updateBoxElement(activeKey);
+    });
+
+    window.addEventListener('pointerup', () => {
+      drag = null;
+    });
+
+    for (const [name, input] of Object.entries(fields)) {
+      input.addEventListener('input', () => {
+        const box = boxes[activeKey];
+        const value = Number(input.value);
+        if (!Number.isFinite(value)) return;
+        if (name === 'w') box.width = clamp(value, 0.04, 1 - box.x);
+        else if (name === 'h') box.height = clamp(value, 0.04, 1 - box.y);
+        else box[name] = clamp(value, 0, 1);
+        updateBoxElement(activeKey);
+      });
+    }
+
+    boxSelect.addEventListener('change', () => {
+      setActiveKey(boxSelect.value);
+    });
+
+    document.querySelectorAll('[data-nudge]').forEach(button => {
+      button.addEventListener('click', () => {
+        const box = boxes[activeKey];
+        const step = 0.005;
+        switch (button.dataset.nudge) {
+          case 'up':
+            box.y = clamp(box.y - step, 0, 1 - box.height);
+            break;
+          case 'down':
+            box.y = clamp(box.y + step, 0, 1 - box.height);
+            break;
+          case 'left':
+            box.x = clamp(box.x - step, 0, 1 - box.width);
+            break;
+          case 'right':
+            box.x = clamp(box.x + step, 0, 1 - box.width);
+            break;
+          case 'grow':
+            box.width = clamp(box.width + step, 0.04, 1 - box.x);
+            box.height = clamp(box.height + step, 0.04, 1 - box.y);
+            break;
+          case 'shrink':
+            box.width = clamp(box.width - step, 0.04, 1 - box.x);
+            box.height = clamp(box.height - step, 0.04, 1 - box.y);
+            break;
+        }
+        updateBoxElement(activeKey);
+      });
+    });
+
+    imageSelect.addEventListener('change', () => {
+      backdrop.src = imageSelect.value;
+    });
+
+    document.querySelector('#reset').addEventListener('click', () => {
+      boxes = JSON.parse(JSON.stringify(defaults));
+      render();
+    });
+
+    document.querySelector('#copy').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(output.value);
+    });
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    render();
+  </script>
+</body>
+</html>
